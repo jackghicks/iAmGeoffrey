@@ -1,5 +1,11 @@
 function Game(canvas, context, spriteSheet)
 {
+    //connect to socket.io
+    var socket = io(document.location.href);
+    socket.on('welcome', function(data) {
+        socket.ticket = data.ticket;
+        console.log("Server connected with ticket " + data.ticket);
+    });
 
     //set up the sprites
     var sprites = {
@@ -54,7 +60,12 @@ function Game(canvas, context, spriteSheet)
             case 40:
                 newPositionY = playerKnight.y +1;
                 break;
+            default:
+                return;
+                break;
         }
+
+        socket.emit('move', {ticket: socket.ticket});
 
         if(maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
         {
@@ -63,11 +74,10 @@ function Game(canvas, context, spriteSheet)
         }
 
     };
-
-
     /**
      * END TEMPORARY
      */
+
     this.update = function(dt, t)
     {
         camera.setTarget(playerKnight.x*32, playerKnight.y*32);

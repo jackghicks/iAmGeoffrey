@@ -13,7 +13,7 @@ module.exports = function(grunt) {
             main: {
                 files: [
                     // includes files within path and its sub-directories
-                    {expand: true, cwd: 'base/', src: ['**'], dest: 'dist/'}
+                    {expand: true, cwd: 'base/', src: ['**'], dest: 'dist/iAmGeoffrey'}
                 ]
             }
         },
@@ -26,7 +26,7 @@ module.exports = function(grunt) {
                     }
                 },
                 files: {
-                    "dist/game/index.html": ["jade/*.jade"]
+                    "dist/iAmGeoffrey/game/index.html": ["jade/*.jade"]
                 }
             }
         },
@@ -38,19 +38,19 @@ module.exports = function(grunt) {
             },
             clientOnly: {
                 src: ['js/client/**/*.js'],
-                dest: 'dist/game/client.min.js'
+                dest: 'dist/iAmGeoffrey/game/client.min.js'
             },
             shared: {
                 src: ['js/shared/**/*.js'],
-                dest: 'dist/game/shared.min.js'
+                dest: 'dist/iAmGeoffrey/game/shared.min.js'
             },
             server: {
                 src: ['js/server/**/*.js'],
-                dest: 'dist/game/server.min.js'
+                dest: 'dist/iAmGeoffrey/game/server.min.js'
             },
             css: {
                 src: ['css/**/*.css'],
-                dest: 'dist/game/style.min.css'
+                dest: 'dist/iAmGeoffrey/game/style.min.css'
             }
         },
 
@@ -61,14 +61,14 @@ module.exports = function(grunt) {
             },
             build: {
                 files: [
-                    {expand: true, cwd: 'dist/game/', src: '*.min.js', dest: 'dist/game'}]
+                    {expand: true, cwd: 'dist/iAmGeoffrey/game/', src: '*.min.js', dest: 'dist/iAmGeoffrey/game'}]
             }
         },
 
         cssmin: {
             target: {
                 files: {
-                    'dist/game/style.min.css': ['dist/game/style.min.css']
+                    'dist/iAmGeoffrey/game/style.min.css': ['dist/iAmGeoffrey/game/style.min.css']
                 }
             }
         },
@@ -80,7 +80,7 @@ module.exports = function(grunt) {
                     level: 0
                 },
                 files: [
-                    {src: ['dist/**'], dest: ''}
+                    {src: ['dist/iAmGeoffrey/**'], dest: ''}
                 ]
             },
             compressed: {
@@ -89,7 +89,7 @@ module.exports = function(grunt) {
                     level: 9
                 },
                 files: [
-                    {src: ['dist/**'], dest: ''}
+                    {src: ['dist/iAmGeoffrey/**'], dest: ''}
                 ]
             }
         },
