@@ -2,7 +2,7 @@ function Game(canvas, context, spriteSheet)
 {
     //connect to socket.io
     var socket = io(document.location.href);
-    socket.on('welcome', function(data) {
+    socket.on('w', function(data) {
         socket.ticket = data.ticket;
         console.log("Server connected with ticket " + data.ticket);
     });
@@ -65,7 +65,7 @@ function Game(canvas, context, spriteSheet)
                 break;
         }
 
-        socket.emit('move', {ticket: socket.ticket});
+        socket.emit('m', {ticket: socket.ticket, key: e.keyCode});
 
         if(maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
         {
@@ -74,6 +74,20 @@ function Game(canvas, context, spriteSheet)
         }
 
     };
+
+    var otherKnights = {};
+    socket.on('pu', function(data)
+    {
+        if(otherKnights[data.sid])
+        {
+            otherKnights[data.sid].x = data.x;
+            otherKnights[data.sid].y = data.y;
+        }
+        else
+        {
+            otherKnights[data.sid] = new Knight(data.x, data.y, spriteSheet);
+        }
+    });
     /**
      * END TEMPORARY
      */
@@ -84,6 +98,11 @@ function Game(canvas, context, spriteSheet)
 
         camera.update(dt);
         playerKnight.update(dt);
+
+        for(var i in otherKnights)
+        {
+            otherKnights[i].update(dt);
+        }
     };
 
     this.draw = function()
@@ -96,6 +115,12 @@ function Game(canvas, context, spriteSheet)
 
         //draw the knight
         playerKnight.draw(camera);
+
+        //draw other knights
+        for(var i in otherKnights)
+        {
+            otherKnights[i].draw();
+        }
 
         //draw the diamond?
         sprites.greenDiamond.draw(64+8, 8, camera);
