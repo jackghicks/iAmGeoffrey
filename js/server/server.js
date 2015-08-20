@@ -11,13 +11,14 @@ io.on('connection', function(socket)
     var sessionId = clientSessionCounter++;
     var session = existingSessions[sessionId] = {
         sid: sessionId,
-        x: 0,
-        y: 0,
+        x: 3,
+        y: 2,
         score: 0,
         socket: socket
     };
 
-    socket.emit('w', session);
+    socket.emit('w', {sid: session.sid});
+
 
     socket.on('rs', function(data) {
 
