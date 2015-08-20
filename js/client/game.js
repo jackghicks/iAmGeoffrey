@@ -1,10 +1,36 @@
 function Game(canvas, context, spriteSheet)
 {
+    //create a knight for the local player and a dictionary for other players
+    var playerKnight = new Knight(0,0, spriteSheet);
+    var otherKnights = {};
+
+    function UpdateOtherKnightPosition(data)
+    {
+        if(otherKnights[data.sid])
+        {
+            otherKnights[data.sid].x = data.x;
+            otherKnights[data.sid].y = data.y;
+        }
+        else
+        {
+            otherKnights[data.sid] = new Knight(data.x, data.y, spriteSheet);
+        }
+    }
+
     //connect to socket.io
     var socket = io(document.location.href);
     socket.on('w', function(data) {
-        socket.ticket = data.ticket;
-        console.log("Server connected with ticket " + data.ticket);
+        socket.ticket = data.sid;
+        console.log("Server connected with ticket " + data.sid);
+
+        playerKnight.x = data.x;
+        playerKnight.y = data.y;
+
+        for(var i = 0 ; i < data.nme.length; i++)
+        {
+            UpdateOtherKnightPosition(data.nme[i]);
+        }
+
     });
 
     //set up the sprites
@@ -21,7 +47,7 @@ function Game(canvas, context, spriteSheet)
     var camera = new CameraController(canvas, context);
 
     //generate a maze
-    var maze = new exports.Maze(new exports.RandomNumberGenerator(), 48);
+    var maze = new exports.Maze(new exports.RandomNumberGenerator(), 24);
 
     //construct the maze batch draw
     var mazeDrawController = new SpriteBatch();
@@ -38,8 +64,7 @@ function Game(canvas, context, spriteSheet)
     /**
      * BEGIN TEMPORARY
      */
-    //create a knight for the local player
-    var playerKnight = new Knight(3,2, spriteSheet);
+
 
     //keyboard listener
     document.onkeydown = function(e)
@@ -75,18 +100,15 @@ function Game(canvas, context, spriteSheet)
 
     };
 
-    var otherKnights = {};
+
     socket.on('pu', function(data)
     {
-        if(otherKnights[data.sid])
-        {
-            otherKnights[data.sid].x = data.x;
-            otherKnights[data.sid].y = data.y;
-        }
-        else
-        {
-            otherKnights[data.sid] = new Knight(data.x, data.y, spriteSheet);
-        }
+        UpdateOtherKnightPosition(data);
+    });
+
+    socket.on('rm', function(data)
+    {
+        delete otherKnights[data.sid];
     });
     /**
      * END TEMPORARY
@@ -119,7 +141,7 @@ function Game(canvas, context, spriteSheet)
         //draw other knights
         for(var i in otherKnights)
         {
-            otherKnights[i].draw();
+            otherKnights[i].draw(camera);
         }
 
         //draw the diamond?
