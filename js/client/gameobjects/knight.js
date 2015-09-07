@@ -1,10 +1,11 @@
-function Knight(initialX, initialY, spriteSheet)
+function Knight(initialX, initialY, name, spriteSheet)
 {
     var spriteKnight = null;
     var spriteSword = null;
 
     this.x = initialX;
     this.y = initialY;
+    this.name = name;
 
     var LERPMULT = 20;
     var drawX = this.x*32;
@@ -31,5 +32,7 @@ function Knight(initialX, initialY, spriteSheet)
         //draw the knight
         spriteKnight.draw(drawX, drawY, camera);
         spriteSword.draw(drawX + 16, drawY, camera);
+
+        camera.fillText(this.name, drawX + 16, drawY);
     }
 }

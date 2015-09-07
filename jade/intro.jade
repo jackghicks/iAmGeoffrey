@@ -1,0 +1,23 @@
+doctype html
+html
+    head
+        title I Am Geoffrey
+        link(rel='stylesheet', href='style.min.css')
+    body(style='text-align:center;')
+        h1 I Am Geoffrey!
+        p The goal is to score kills on other players.  To score a kill, get behind other players and stab them in the back!
+        hr
+        form(action='/' method='get')
+            p Select a character and enter your name to begin! <br/>
+            label(for='m') Knight
+            input(type='radio' name='char' id='m' value='m' checked)
+            label(for='f') Princess
+            input(type='radio' name='char' id='f' value='f')
+            br
+            br
+            input(type='text' id='name' name='name' placeholder='Player Name')
+            br
+            br
+            input(type='submit' value='Start!')
+            br
+            hr

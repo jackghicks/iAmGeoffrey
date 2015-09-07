@@ -33,7 +33,7 @@ io.on('connection', function(socket)
     {
         if(otherSessionId!= sessionId)
         {
-            welcomeMessage.nme.push({sid: existingSessions[otherSessionId].sid, x: existingSessions[otherSessionId].x, y: existingSessions[otherSessionId].y});
+            welcomeMessage.nme.push({sid: existingSessions[otherSessionId].sid, x: existingSessions[otherSessionId].x, y: existingSessions[otherSessionId].y, name:existingSessions[otherSessionId].name, char: existingSessions[otherSessionId].char});
         }
     }
 
@@ -42,6 +42,11 @@ io.on('connection', function(socket)
 
     //tell everybody we are here!
     InformOtherPlayersOfNewPosition(session, existingSessions);
+
+    socket.on('i', function(data) {
+        session.name = data.name;
+        session.char = data.char;
+    });
 
     socket.on('rs', function(data) {
 
@@ -54,45 +59,38 @@ io.on('connection', function(socket)
     });
 
     socket.on('m', function(data) {
-        var newPositionX = session.x;
-        var newPositionY = session.y;
-        switch (data.key)
+        var dirVector = shared.keyCodes[data.key];
+        if(dirVector)
         {
-            case 37:
-                newPositionX = session.x -1;
-                break;
-            case 38:
-                newPositionY = session.y -1;
-                break;
-            case 39:
-                newPositionX = session.x +1;
-                break;
-            case 40:
-                newPositionY = session.y +1;
-                break;
-            default:
-                return;
-                break;
+            var newPositionX = session.x + dirVector.x;
+            var newPositionY = session.y + dirVector.y;
+
+            if (maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
+            {
+                session.x = newPositionX;
+                session.y = newPositionY;
+                InformOtherPlayersOfNewPosition(session, existingSessions);
+            }
         }
-
-
-        if(maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
+        else
         {
-            session.x = newPositionX;
-            session.y = newPositionY;
-            InformOtherPlayersOfNewPosition(session, existingSessions);
+            //do nothing, unrecognised key!
         }
     });
 });
 
 function InformOtherPlayersOfNewPosition(session, existingSessions, msg)
 {
+    var positionMessage = {sid: session.sid, x: session.x, y: session.y};
+    positionMessage.name = session.name;
+    positionMessage.char = session.char;
+
     //send position update to all other players
     for(var otherSessionId in existingSessions)
     {
         if(otherSessionId!= session.sid)
         {
-            existingSessions[otherSessionId].socket.emit(msg||'pu', {sid: session.sid, x: session.x, y: session.y});
+            existingSessions[otherSessionId].socket.emit(msg||'pu', positionMessage);
         }
     }
 }

@@ -91,4 +91,22 @@ function CameraController(canvas, context)
         context.restore();
     };
 
+    this.fillText = function(text, x, y)
+    {
+        //store the current transformation state
+        context.save();
+
+        //perform scaling (scale down the canvas)
+        context.scale(this.globalScale, this.globalScale);
+
+        //transform by camera
+        context.translate(-this.drawableX, -this.drawableY);
+
+        //draw the text
+        context.fillText(text, x, y);
+
+        //move the canvas back to where it belongs!
+        context.restore();
+    };
+
 }

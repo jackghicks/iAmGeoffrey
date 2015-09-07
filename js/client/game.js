@@ -1,7 +1,7 @@
 function Game(canvas, context, spriteSheet)
 {
     //create a knight for the local player and a dictionary for other players
-    var playerKnight = new Knight(0,0, spriteSheet);
+    var playerKnight = new Knight(0,0, playerName, spriteSheet);
     var otherKnights = {};
 
     var keyCodes = exports.keyCodes;
@@ -12,10 +12,11 @@ function Game(canvas, context, spriteSheet)
         {
             otherKnights[data.sid].x = data.x;
             otherKnights[data.sid].y = data.y;
+            otherKnights[data.sid].name = data.name;
         }
         else
         {
-            otherKnights[data.sid] = new Knight(data.x, data.y, spriteSheet);
+            otherKnights[data.sid] = new Knight(data.x, data.y, data.name, spriteSheet);
         }
     }
 
@@ -32,6 +33,9 @@ function Game(canvas, context, spriteSheet)
         {
             UpdateOtherKnightPosition(data.nme[i]);
         }
+
+        //transmit name and character class to server
+        socket.emit('i', {name: playerName, char: playerCharacter});
 
     });
 
@@ -109,7 +113,7 @@ function Game(canvas, context, spriteSheet)
                     //block the walk
                     //TODO: trigger own death?
 
-
+                    return true;
                 }
                 else
                 {
@@ -156,6 +160,11 @@ function Game(canvas, context, spriteSheet)
 
         //draw the maze
         mazeDrawController.drawAll(camera);
+
+        //set the font for player names now
+        context.font="10px monospace";
+        context.fillStyle = "white";
+        context.textAlign = "center";
 
         //draw the knight
         playerKnight.draw(camera);

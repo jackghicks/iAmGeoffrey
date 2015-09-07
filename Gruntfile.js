@@ -26,7 +26,8 @@ module.exports = function(grunt) {
                     }
                 },
                 files: {
-                    "dist/iAmGeoffrey/game/index.html": ["jade/*.jade"]
+                    "dist/iAmGeoffrey/game/index.html": ["jade/index.jade"],
+                    "dist/iAmGeoffrey/game/intro.html": ["jade/intro.jade"]
                 }
             }
         },
