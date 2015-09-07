@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.idea/
+.grunt-uglify-cache.json
+compressed.zip
+uncompressed.zip

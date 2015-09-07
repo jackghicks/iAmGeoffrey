@@ -1,7 +1,7 @@
 IAmGeoffrey
 ===========
 
-An endless, 'massively multiplayer' struggle to decide, who really is Geoffrey?
+An endless, 'massively multiplayer' struggle to decide, who is the real Geoffrey?
 
 The Game
 --------
