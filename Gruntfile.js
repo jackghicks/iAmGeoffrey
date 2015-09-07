@@ -100,16 +100,16 @@ module.exports = function(grunt) {
                 tasks: ['concat', 'uglify', 'cssmin', 'compress'],
                 options: {
                     spawn: false,
-                },
+                }
             },
             jade: {
                 files: ['**/*.jade'],
                 tasks: ['jade', 'compress'],
                 options: {
                     spawn: false,
-                },
+                }
             }
-        },
+        }
 
 
     });

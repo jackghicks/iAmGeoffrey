@@ -4,6 +4,8 @@ function Game(canvas, context, spriteSheet)
     var playerKnight = new Knight(0,0, spriteSheet);
     var otherKnights = {};
 
+    var keyCodes = exports.keyCodes;
+
     function UpdateOtherKnightPosition(data)
     {
         if(otherKnights[data.sid])
@@ -66,40 +68,60 @@ function Game(canvas, context, spriteSheet)
      */
 
 
+
     //keyboard listener
     document.onkeydown = function(e)
     {
         var newPositionX = playerKnight.x;
         var newPositionY = playerKnight.y;
-        switch (e.keyCode)
-        {
-            case 37:
-                newPositionX = playerKnight.x -1;
-                break;
-            case 38:
-                newPositionY = playerKnight.y -1;
-                break;
-            case 39:
-                newPositionX = playerKnight.x +1;
-                break;
-            case 40:
-                newPositionY = playerKnight.y +1;
-                break;
-            default:
-                return;
-                break;
-        }
+        var direction = keyCodes[e.keyCode];
 
-        socket.emit('m', {ticket: socket.ticket, key: e.keyCode});
+        if(!direction)
+            return;
 
-        if(maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
+        newPositionX += direction.x;
+        newPositionY += direction.y;
+
+        if(TestActiveCollisions(newPositionX,newPositionY,e.keyCode) == false && maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
         {
+            socket.emit('m', {ticket: socket.ticket, key: e.keyCode});
             playerKnight.x = newPositionX;
             playerKnight.y = newPositionY;
         }
 
     };
 
+    function TestActiveCollisions(newPositionX, newPositionY, keyCode)
+    {
+        //Test for Knights
+        for (var sid in otherKnights)
+        {
+            if(otherKnights[sid].x == newPositionX && otherKnights[sid].y == newPositionY)
+            {
+                if(keyCode==39)
+                {
+                    //allow the walk, trigger opponent death
+
+
+                }
+                else if(keyCode==37)
+                {
+                    //block the walk
+                    //TODO: trigger own death?
+
+
+                }
+                else
+                {
+                    //block the walk
+                    //TODO: consider the "push" mechanic here
+
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     socket.on('pu', function(data)
     {
