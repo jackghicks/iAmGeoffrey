@@ -170,7 +170,8 @@ function Game(canvas, context, spriteSheet)
             //mark victim as dead
             otherKnights[data.vic].dead = true;
 
-            //TODO: Trigger "You killed X" message
+            //trigger "You killed X" message
+            textAnnouncer.displayMessage("You killed " + otherKnights[data.vic].name, "top");
         }
         else if(data.vic == socket.ticket)
         {
@@ -181,7 +182,10 @@ function Game(canvas, context, spriteSheet)
             //HACK: Disable movement
             keyCodes = [];
 
-            //TODO: Trigger "X killed you" message
+            //trigger "X killed you" message
+            textAnnouncer.displayMessage(otherKnights[data.perp].name + " killed you", "top");
+
+            textAnnouncer.displayMessage("You Are Dead.", "middle");
 
             //after 3 seconds, refresh the page to trigger respawn
             setTimeout(function()
@@ -197,11 +201,13 @@ function Game(canvas, context, spriteSheet)
             //mark victim as dead
             otherKnights[data.vic].dead = true;
 
-            //TODO: Trigger "X killed Y" message
+            //trigger "X killed Y" message
+            textAnnouncer.displayMessage(otherKnights[data.perp].name + " killed " + otherKnights[data.vic].name, "top");
+
         }
 
 
-        textAnnouncer.displayMessage("Death Occurred!", "40px monospace");
+
 
         //TODO: Play blood splatter
 
