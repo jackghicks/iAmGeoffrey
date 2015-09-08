@@ -2,11 +2,12 @@ var io = require('sandbox-io');
 var shared = require('./shared.min.js');
 var clientSessionCounter = 0;
 
-var maze = new shared.Maze(new shared.RandomNumberGenerator(), 24);
+var maze = new shared.Maze(new shared.RandomNumberGenerator(), 16);
 var existingSessions = {};
 
 io.on('connection', function(socket)
 {
+
     //calculate a starting place
     var startingPlace = CalculateStartingPlace(maze, existingSessions);
 
@@ -48,10 +49,6 @@ io.on('connection', function(socket)
         session.char = data.char;
     });
 
-    socket.on('rs', function(data) {
-
-    });
-
     socket.on('disconnect', function()
     {
         InformOtherPlayersOfNewPosition(session, existingSessions, 'rm');
@@ -71,6 +68,26 @@ io.on('connection', function(socket)
                 session.y = newPositionY;
                 InformOtherPlayersOfNewPosition(session, existingSessions);
             }
+
+            //compare with positions of others!
+            for (var sid in existingSessions)
+            {
+                if (existingSessions[sid].x == newPositionX && existingSessions[sid].y == newPositionY)
+                {
+                    if(data.key==39)
+                    {
+                        //increase score
+                        session.score++;
+
+                        //broadcast the kill to everyone
+                        BroadcastToAllOthers(existingSessions, null, 'k', {
+                            perp: sessionId,
+                            vic: sid,
+                            perpScore: session.score
+                        });
+                    }
+                }
+            }
         }
         else
         {
@@ -84,13 +101,19 @@ function InformOtherPlayersOfNewPosition(session, existingSessions, msg)
     var positionMessage = {sid: session.sid, x: session.x, y: session.y};
     positionMessage.name = session.name;
     positionMessage.char = session.char;
+    positionMessage.score = session.score;
 
+    BroadcastToAllOthers(existingSessions, session, msg||'pu', positionMessage);
+}
+
+function BroadcastToAllOthers(existingSessions, session, msg, content)
+{
     //send position update to all other players
     for(var otherSessionId in existingSessions)
     {
-        if(otherSessionId!= session.sid)
+        if(!session || otherSessionId != session.sid)
         {
-            existingSessions[otherSessionId].socket.emit(msg||'pu', positionMessage);
+            existingSessions[otherSessionId].socket.emit(msg, content);
         }
     }
 }

@@ -1,7 +1,7 @@
 function Game(canvas, context, spriteSheet)
 {
     //create a knight for the local player and a dictionary for other players
-    var playerKnight = new Knight(0,0, playerName, spriteSheet);
+    var playerKnight = new Knight(0,0, playerName, playerCharacter, 0, spriteSheet);
     var otherKnights = {};
 
     var keyCodes = exports.keyCodes;
@@ -13,10 +13,12 @@ function Game(canvas, context, spriteSheet)
             otherKnights[data.sid].x = data.x;
             otherKnights[data.sid].y = data.y;
             otherKnights[data.sid].name = data.name;
+            otherKnights[data.sid].char = data.char;
+            otherKnights[data.sid].score = data.score;
         }
         else
         {
-            otherKnights[data.sid] = new Knight(data.x, data.y, data.name, spriteSheet);
+            otherKnights[data.sid] = new Knight(data.x, data.y, data.name, data.char, 0, spriteSheet);
         }
     }
 
@@ -53,7 +55,7 @@ function Game(canvas, context, spriteSheet)
     var camera = new CameraController(canvas, context);
 
     //generate a maze
-    var maze = new exports.Maze(new exports.RandomNumberGenerator(), 24);
+    var maze = new exports.Maze(new exports.RandomNumberGenerator(), 16);
 
     //construct the maze batch draw
     var mazeDrawController = new SpriteBatch();
@@ -105,21 +107,17 @@ function Game(canvas, context, spriteSheet)
                 if(keyCode==39)
                 {
                     //allow the walk, trigger opponent death
-
-
+                    //TODO: Trigger sword swing!
                 }
                 else if(keyCode==37)
                 {
-                    //block the walk
-                    //TODO: trigger own death?
-
+                    //block the walk, cannot kill yourself
                     return true;
                 }
                 else
                 {
                     //block the walk
                     //TODO: consider the "push" mechanic here
-
                     return true;
                 }
             }
@@ -135,6 +133,34 @@ function Game(canvas, context, spriteSheet)
     socket.on('rm', function(data)
     {
         delete otherKnights[data.sid];
+    });
+
+    socket.on('k', function(data)
+    {
+        if(data.perp == socket.ticket)
+        {
+            //TODO: I Am The Murderer.  Increase own score
+            playerKnight.score = data.perpScore;
+
+
+        }
+        else if(data.vic == socket.ticket)
+        {
+            //TODO: I Am The Victim, And Have Contracted 'Death' Logic!
+            //Disconnect the socket to remove the Knight (and ensure it doesn't auto-reconnect!)
+            //Go to Game Over page?
+            //for now, reset
+            window.location = window.location;
+        }
+        else
+        {
+            //TODO: Locate otherKnight with the given sid from data.perp, and set score to data.perpScore
+        }
+
+        //TODO: Play bloodsplatter
+
+        //TODO: If just became Geoffrey, display the I AM (or THEY ARE) NOW GEOFFREY celebration thing
+
     });
     /**
      * END TEMPORARY
