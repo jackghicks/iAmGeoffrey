@@ -46,7 +46,7 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
             spriteSword.draw(drawX + 16, drawY, camera);
 
             //draw the players name
-            camera.fillText(this.name, drawX + 16, drawY);
+            camera.fillText(this.name + " - " + this.score, drawX + 16, drawY);
         }
     }
 }

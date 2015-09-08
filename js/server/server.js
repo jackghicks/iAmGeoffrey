@@ -72,6 +72,7 @@ io.on('connection', function(socket)
             //compare with positions of others!
             for (var sid in existingSessions)
             {
+                if(sid==sessionId) continue;
                 if (existingSessions[sid].x == newPositionX && existingSessions[sid].y == newPositionY)
                 {
                     if(data.key==39)
