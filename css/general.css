@@ -9,17 +9,19 @@ body
     color: #bbbbbb;
 }
 
-#debug
+#btl
 {
     text-shadow:
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000,
     1px 1px 0 #000;
-    position: relative;
-    top:-1em;
+    position: absolute;
+    width:100%;
     color: white;
-    font-size: 3em;
     font-family: monospace;
     font-weight: bolder;
+    top:0px;
+    font-size: 1.2em;
+    text-align:right;
 }

@@ -53,7 +53,7 @@ var readyStateCheckInterval = setInterval(function() {
                     var fps = (frameCount / (dateNow-frameCountResetTime)) * 1000;
                     frameCount = 0;
                     frameCountResetTime = dateNow;
-                    document.getElementById('debug').innerText = "FPS: " + fps.toFixed(3);
+                    //document.getElementById('btl').innerText = "FPS: " + fps.toFixed(3);
                 }
             }
 

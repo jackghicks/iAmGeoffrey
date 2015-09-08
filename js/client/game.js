@@ -1,5 +1,9 @@
 function Game(canvas, context, spriteSheet)
 {
+
+    //create a TextAnouncer
+    var textAnnouncer = new TextAnnouncer(canvas, context);
+
     //create a knight for the local player and a dictionary for other players
     var playerKnight = new Knight(0,0, playerName, playerCharacter, 0, spriteSheet);
     var otherKnights = {};
@@ -38,7 +42,27 @@ function Game(canvas, context, spriteSheet)
 
         //transmit name and character class to server
         socket.emit('i', {name: playerName, char: playerCharacter});
+    });
 
+    socket.on('cp', function(data) {
+        var players = data.players;
+        var topScore =  players[0].score;
+        for(var i=0;i<players.length; i++)
+        {
+            //handle gilded status!
+            var isGold = players[i].score == topScore;
+            if(players[i].sid == socket.ticket)
+            {
+                playerKnight.gold = isGold;
+            }
+            else if(otherKnights[players[i].sid])
+            {
+                otherKnights[players[i].sid].gold = isGold;
+            }
+
+            players[i] = players[i].name + " - " + players[i].score;
+        }
+        document.getElementById('btl').innerHTML = data.players.join("<br />");
     });
 
     //set up the sprites
@@ -102,7 +126,7 @@ function Game(canvas, context, spriteSheet)
         //Test for Knights
         for (var sid in otherKnights)
         {
-            if(otherKnights[sid].x == newPositionX && otherKnights[sid].y == newPositionY)
+            if(!otherKnights[sid].dead && otherKnights[sid].x == newPositionX && otherKnights[sid].y == newPositionY)
             {
                 if(keyCode==39)
                 {
@@ -139,27 +163,47 @@ function Game(canvas, context, spriteSheet)
     {
         if(data.perp == socket.ticket)
         {
-            //TODO: I Am The Murderer.  Increase own score
+            //I Am The Murderer.
+            //increase own score
             playerKnight.score = data.perpScore;
 
+            //mark victim as dead
+            otherKnights[data.vic].dead = true;
 
+            //TODO: Trigger "You killed X" message
         }
         else if(data.vic == socket.ticket)
         {
-            //TODO: I Am The Victim, And Have Contracted 'Death' Logic!
-            //Disconnect the socket to remove the Knight (and ensure it doesn't auto-reconnect!)
-            //Go to Game Over page?
-            //for now, reset
-            window.location = window.location;
+            //I Am The Victim
+            //mark own character as dead
+            playerKnight.dead = true;
+
+            //HACK: Disable movement
+            keyCodes = [];
+
+            //TODO: Trigger "X killed you" message
+
+            //after 3 seconds, refresh the page to trigger respawn
+            setTimeout(function()
+            {
+                window.location = window.location;
+            }, 3000);
         }
         else
         {
-            //TODO: Locate otherKnight with the given sid from data.perp, and set score to data.perpScore
+            //update score of perpetrator
+            otherKnights[data.perp].score = data.perpScore;
+
+            //mark victim as dead
+            otherKnights[data.vic].dead = true;
+
+            //TODO: Trigger "X killed Y" message
         }
 
-        //TODO: Play bloodsplatter
 
-        //TODO: If just became Geoffrey, display the I AM (or THEY ARE) NOW GEOFFREY celebration thing
+        textAnnouncer.displayMessage("Death Occurred!", "40px monospace");
+
+        //TODO: Play blood splatter
 
     });
     /**
@@ -172,6 +216,8 @@ function Game(canvas, context, spriteSheet)
 
         camera.update(dt);
         playerKnight.update(dt);
+
+        textAnnouncer.update(dt);
 
         for(var i in otherKnights)
         {
@@ -203,5 +249,7 @@ function Game(canvas, context, spriteSheet)
 
         //draw the diamond?
         sprites.greenDiamond.draw(64+8, 8, camera);
+
+        textAnnouncer.draw();
     };
 }

@@ -47,6 +47,8 @@ io.on('connection', function(socket)
     socket.on('i', function(data) {
         session.name = data.name;
         session.char = data.char;
+
+        UpdateCurrentlyOnlineList(existingSessions);
     });
 
     socket.on('disconnect', function()
@@ -73,12 +75,17 @@ io.on('connection', function(socket)
             for (var sid in existingSessions)
             {
                 if(sid==sessionId) continue;
-                if (existingSessions[sid].x == newPositionX && existingSessions[sid].y == newPositionY)
+                if (existingSessions[sid].x == newPositionX && existingSessions[sid].y == newPositionY && !existingSessions[sid].dead)
                 {
                     if(data.key==39)
                     {
                         //increase score
                         session.score++;
+
+                        //mark as dead!
+                        existingSessions[sid].dead = true;
+
+                        UpdateCurrentlyOnlineList(existingSessions);
 
                         //broadcast the kill to everyone
                         BroadcastToAllOthers(existingSessions, null, 'k', {
@@ -105,6 +112,23 @@ function InformOtherPlayersOfNewPosition(session, existingSessions, msg)
     positionMessage.score = session.score;
 
     BroadcastToAllOthers(existingSessions, session, msg||'pu', positionMessage);
+}
+
+function UpdateCurrentlyOnlineList(existingSessions)
+{
+    var players = [];
+
+    for(var sid in existingSessions)
+    {
+        if(!existingSessions[sid].dead)
+        {
+            players.push({sid: sid, name:existingSessions[sid].name, score: existingSessions[sid].score });
+        }
+    }
+
+    players = players.sort(function(a,b) { return b.score - a.score; } );
+
+    BroadcastToAllOthers(existingSessions, null, 'cp', {players:players});
 }
 
 function BroadcastToAllOthers(existingSessions, session, msg, content)
