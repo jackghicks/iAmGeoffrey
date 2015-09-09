@@ -56,14 +56,23 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
                 {
                     spriteKnight.sx += 32;
                 }
+                if(FLIPPED)
+                {
+                    spriteKnight.sy += 32;
+                }
+
                 //draw the knight
                 spriteKnight.draw(drawX, drawY, camera);
-                spriteSword.draw(drawX + 16, drawY, camera);
+                spriteSword.draw(drawX + 16 - (FLIPPED?21:0), drawY, camera);
 
                 //undo gold sprite switch!
                 if(this.gold)
                 {
                     spriteKnight.sx -= 32;
+                }
+                if(FLIPPED)
+                {
+                    spriteKnight.sy -= 32;
                 }
             }
             //draw the players name

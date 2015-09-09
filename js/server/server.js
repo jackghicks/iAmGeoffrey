@@ -5,6 +5,13 @@ var clientSessionCounter = 0;
 var maze = new shared.Maze(new shared.RandomNumberGenerator(), 16);
 var existingSessions = {};
 
+var FLIPPED = true;
+
+setInterval(function() {
+    FLIPPED = !FLIPPED;
+    BroadcastToAllOthers(existingSessions, null, 'f', {flipped: FLIPPED, name: "The Timer"});
+}, 5000);
+
 io.on('connection', function(socket)
 {
 
@@ -26,7 +33,8 @@ io.on('connection', function(socket)
         sid: session.sid,
         nme: [],
         x: session.x,
-        y: session.y
+        y: session.y,
+        flipped: FLIPPED
     };
 
     //construct list of enemy positions for welcome message
@@ -77,7 +85,7 @@ io.on('connection', function(socket)
                 if(sid==sessionId) continue;
                 if (existingSessions[sid].x == newPositionX && existingSessions[sid].y == newPositionY && !existingSessions[sid].dead)
                 {
-                    if(data.key==39)
+                    if(data.key==(FLIPPED?37:39))
                     {
                         //increase score
                         session.score++;

@@ -1,3 +1,5 @@
+var FLIPPED = false;
+
 function Game(canvas, context, spriteSheet)
 {
 
@@ -35,6 +37,8 @@ function Game(canvas, context, spriteSheet)
         playerKnight.x = data.x;
         playerKnight.y = data.y;
 
+        FLIPPED = data.flipped;
+
         for(var i = 0 ; i < data.nme.length; i++)
         {
             UpdateOtherKnightPosition(data.nme[i]);
@@ -42,6 +46,15 @@ function Game(canvas, context, spriteSheet)
 
         //transmit name and character class to server
         socket.emit('i', {name: playerName, char: playerCharacter});
+    });
+
+    socket.on('f', function(data) {
+        if(FLIPPED!= data.flipped)
+        {
+            textAnnouncer.displayMessage("REVERSED!", "middle");
+            textAnnouncer.displayMessage(data.name + " has reversed the game!", "top");
+        }
+        FLIPPED = data.flipped;
     });
 
     socket.on('cp', function(data) {
@@ -128,12 +141,12 @@ function Game(canvas, context, spriteSheet)
         {
             if(!otherKnights[sid].dead && otherKnights[sid].x == newPositionX && otherKnights[sid].y == newPositionY)
             {
-                if(keyCode==39)
+                if(keyCode==(FLIPPED?37:39))
                 {
                     //allow the walk, trigger opponent death
                     //TODO: Trigger sword swing!
                 }
-                else if(keyCode==37)
+                else if(keyCode==(FLIPPED?39:37))
                 {
                     //block the walk, cannot kill yourself
                     return true;
