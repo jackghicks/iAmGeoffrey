@@ -4,8 +4,23 @@ var clientSessionCounter = 0;
 
 var maze = new shared.Maze(new shared.RandomNumberGenerator(), 16);
 var existingSessions = {};
+var collectables = [];
 
 var FLIPPED = true;
+
+//spawn in initial collectables
+function SpawnCollectables(type, count)
+{
+    for(var i = 0; i < count; i++ )
+    {
+        var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
+        collectables.push({type:type, x: startingPlace.x, y: startingPlace.y});
+    }
+}
+SpawnCollectables('bomb', 5);
+SpawnCollectables('point', 13);
+SpawnCollectables('reverse', 3);
+
 
 setInterval(function() {
     FLIPPED = !FLIPPED;
@@ -16,7 +31,7 @@ io.on('connection', function(socket)
 {
 
     //calculate a starting place
-    var startingPlace = CalculateStartingPlace(maze, existingSessions);
+    var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
 
     //new session, assign a sessionId and create the initial session object
     var sessionId = clientSessionCounter++;
@@ -34,7 +49,8 @@ io.on('connection', function(socket)
         nme: [],
         x: session.x,
         y: session.y,
-        flipped: FLIPPED
+        flipped: FLIPPED,
+        collectables: collectables
     };
 
     //construct list of enemy positions for welcome message
@@ -63,6 +79,24 @@ io.on('connection', function(socket)
     {
         InformOtherPlayersOfNewPosition(session, existingSessions, 'rm');
         delete existingSessions[sessionId];
+    });
+
+    socket.on('p', function(data)
+    {
+        for(var i = 0 ; i < collectables.length ; i ++ )
+        {
+            if(collectables[i].x == data.x && collectables[i].y == data.y)
+            {
+                //get a new starting place
+                var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
+
+                //set it into the collectable
+                collectables[i].x = startingPlace.x;
+                collectables[i].y = startingPlace.y;
+
+                BroadcastToAllOthers(existingSessions, null, 'c', { collect: data, add: collectables[i] });
+            }
+        }
     });
 
     socket.on('m', function(data) {

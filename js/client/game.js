@@ -10,6 +10,8 @@ function Game(canvas, context, spriteSheet)
     var playerKnight = new Knight(0,0, playerName, playerCharacter, 0, spriteSheet);
     var otherKnights = {};
 
+    var collectables = [];
+
     var keyCodes = exports.keyCodes;
 
     function UpdateOtherKnightPosition(data)
@@ -39,6 +41,8 @@ function Game(canvas, context, spriteSheet)
 
         FLIPPED = data.flipped;
 
+        collectables = data.collectables;
+
         for(var i = 0 ; i < data.nme.length; i++)
         {
             UpdateOtherKnightPosition(data.nme[i]);
@@ -46,6 +50,24 @@ function Game(canvas, context, spriteSheet)
 
         //transmit name and character class to server
         socket.emit('i', {name: playerName, char: playerCharacter});
+    });
+
+    socket.on('c', function(data) {
+        if(data.collect)
+        {
+            for(var i = 0 ;i <collectables.length; i++)
+            {
+                if(collectables[i].x == data.collect.x && collectables[i].y == data.collect.y)
+                {
+                    collectables.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        if(data.add)
+        {
+            collectables.push(data.add);
+        }
     });
 
     socket.on('f', function(data) {
@@ -82,7 +104,9 @@ function Game(canvas, context, spriteSheet)
     var sprites = {
         floor: new Sprite(spriteSheet, 0,0,16,16),
         wall: new Sprite(spriteSheet, 32,0,32,32),
-        greenDiamond: new Sprite(spriteSheet, 0,16,16,16)
+        greenDiamond: new Sprite(spriteSheet, 0,16,16,16),
+        bomb: new Sprite(spriteSheet, 96,0,16,16),
+        point: new Sprite(spriteSheet, 96,16,16,16)
     };
 
     //scale up the floor sprite
@@ -115,6 +139,11 @@ function Game(canvas, context, spriteSheet)
     //keyboard listener
     document.onkeydown = function(e)
     {
+        if( e.keyCode == 32)
+        {
+            socket.emit('p', { x: playerKnight.x, y: playerKnight.y });
+        }
+
         var newPositionX = playerKnight.x;
         var newPositionY = playerKnight.y;
         var direction = keyCodes[e.keyCode];
@@ -252,6 +281,8 @@ function Game(canvas, context, spriteSheet)
         //draw the maze
         mazeDrawController.drawAll(camera);
 
+        RenderCollectables(camera);
+
         //set the font for player names now
         context.font="10px monospace";
         context.fillStyle = "white";
@@ -266,9 +297,29 @@ function Game(canvas, context, spriteSheet)
             otherKnights[i].draw(camera);
         }
 
-        //draw the diamond?
-        sprites.greenDiamond.draw(64+8, 8, camera);
-
         textAnnouncer.draw();
     };
+
+    function RenderCollectables(camera)
+    {
+        for(var i = 0 ; i < collectables.length; i++)
+        {
+            var x = collectables[i].x*32 + 8;
+            var y = collectables[i].y*32 + 8;
+            var sprite = null;
+            if(collectables[i].type=='bomb')
+            {
+                sprite = sprites.bomb;
+            } else if(collectables[i].type=='point')
+            {
+                sprite = sprites.point;
+            } else if(collectables[i].type=='reverse')
+            {
+                sprite = sprites.greenDiamond;
+            }
+            sprite.draw(x,y,camera);
+        }
+    }
+
 }
+
