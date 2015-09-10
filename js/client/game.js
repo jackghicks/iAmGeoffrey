@@ -255,6 +255,8 @@ function Game(canvas, context, spriteSheet)
 
     socket.on('k', function(data)
     {
+        var killVerb = data.method=='s'?" stabbed ": " detonated ";
+
         if(data.perp == socket.ticket)
         {
             //I Am The Murderer.
@@ -265,7 +267,7 @@ function Game(canvas, context, spriteSheet)
             otherKnights[data.vic].dead = true;
 
             //trigger "You killed X" message
-            textAnnouncer.displayMessage("You killed " + otherKnights[data.vic].name, "top");
+            textAnnouncer.displayMessage("You" + killVerb + otherKnights[data.vic].name, "top");
         }
         else if(data.vic == socket.ticket)
         {
@@ -277,7 +279,7 @@ function Game(canvas, context, spriteSheet)
             keyCodes = [];
 
             //trigger "X killed you" message
-            textAnnouncer.displayMessage(otherKnights[data.perp].name + " killed you", "top");
+            textAnnouncer.displayMessage(otherKnights[data.perp].name +  killVerb + "you", "top");
 
             textAnnouncer.displayMessage("You Are Dead.", "middle");
 
@@ -296,7 +298,7 @@ function Game(canvas, context, spriteSheet)
             otherKnights[data.vic].dead = true;
 
             //trigger "X killed Y" message
-            textAnnouncer.displayMessage(otherKnights[data.perp].name + " killed " + otherKnights[data.vic].name, "top");
+            textAnnouncer.displayMessage(otherKnights[data.perp].name +  killVerb + otherKnights[data.vic].name, "top");
 
         }
 
