@@ -26,6 +26,16 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
 
     this.draw = function(camera)
     {
+        var spriteHolding = null;
+        if(this.holding=='reverse')
+        {
+            spriteHolding = sprites.greenDiamond;
+        }
+        if(this.holding=='bomb')
+        {
+            spriteHolding = sprites.bomb;
+        }
+
         //lazily create the sprites on first draw
         if(!spriteKnight)
         {
@@ -64,6 +74,9 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
                 //draw the knight
                 spriteKnight.draw(drawX, drawY, camera);
                 spriteSword.draw(drawX + 16 - (FLIPPED?21:0), drawY, camera);
+
+                if(spriteHolding)
+                    spriteHolding.draw(drawX-4 + (FLIPPED?24:0), drawY+16, camera);
 
                 //undo gold sprite switch!
                 if(this.gold)

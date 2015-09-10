@@ -11,18 +11,24 @@ function Game(canvas, context, spriteSheet)
     var otherKnights = {};
 
     var collectables = [];
+    var effects = [];
 
     var keyCodes = exports.keyCodes;
 
     function UpdateOtherKnightPosition(data)
     {
-        if(otherKnights[data.sid])
+        if(data.sid == socket.ticket) {
+            playerKnight.score = data.score;
+            playerKnight.holding = data.holding;
+        }
+        else if(otherKnights[data.sid])
         {
             otherKnights[data.sid].x = data.x;
             otherKnights[data.sid].y = data.y;
             otherKnights[data.sid].name = data.name;
             otherKnights[data.sid].char = data.char;
             otherKnights[data.sid].score = data.score;
+            otherKnights[data.sid].holding = data.holding;
         }
         else
         {
@@ -50,6 +56,52 @@ function Game(canvas, context, spriteSheet)
 
         //transmit name and character class to server
         socket.emit('i', {name: playerName, char: playerCharacter});
+    });
+
+    socket.on('bomb', function(data) {
+        if(data.placed)
+        {
+            effects.push(new Bomb(data.placed.x, data.placed.y));
+        }
+
+        if(data.expl)
+        {
+            console.log(data.expl);
+            //remove the bomb
+            for(var i = 0 ;i <effects.length; i++)
+            {
+                if(effects[i].x == data.expl.x && effects[i].y == data.expl.y)
+                {
+                    effects.splice(i, 1);
+                    break;
+                }
+            }
+
+            //add the explosion effects
+            for(var x = data.expl.l; x<=data.expl.r; x++ )
+            {
+                effects.push(new Explosion(x, data.expl.y, Math.abs(x-data.expl.x)*50, spriteSheet));
+            }
+            for(var y = data.expl.t; y<=data.expl.b; y++ )
+            {
+                effects.push(new Explosion(data.expl.x, y, Math.abs(y-data.expl.y)*50, spriteSheet));
+            }
+
+            /*effects.push(new Explosion(data.expl.x, data.expl.y, 0, spriteSheet));
+
+            for(var i = 1; i <= 5; i++ )
+            {
+
+                if(data.expl.x + i <= data.expl.r)
+                    effects.push(new Explosion(data.expl.x + i, data.expl.y, i*50, spriteSheet));
+                if(data.expl.x - i >= data.expl.l)
+                    effects.push(new Explosion(data.expl.x - i, data.expl.y, i*50, spriteSheet));
+                if(data.expl.y + i <= data.expl.b)
+                    effects.push(new Explosion(data.expl.x, data.expl.y +1, i*50, spriteSheet));
+                if(data.expl.y - i >= data.expl.t)
+                    effects.push(new Explosion(data.expl.x, data.expl.y -1, i*50, spriteSheet));
+            }*/
+        }
     });
 
     socket.on('c', function(data) {
@@ -100,8 +152,8 @@ function Game(canvas, context, spriteSheet)
         document.getElementById('btl').innerHTML = data.players.join("<br />");
     });
 
-    //set up the sprites
-    var sprites = {
+    //set up the sprites (GLOBAL!)
+    sprites = {
         floor: new Sprite(spriteSheet, 0,0,16,16),
         wall: new Sprite(spriteSheet, 32,0,32,32),
         greenDiamond: new Sprite(spriteSheet, 0,16,16,16),
@@ -271,6 +323,15 @@ function Game(canvas, context, spriteSheet)
         {
             otherKnights[i].update(dt);
         }
+
+        for(var i = 0 ; i < effects.length; i++)
+        {
+            effects[i].update(dt);
+            if(effects[i].expired)
+            {
+                effects.splice(i--,1);
+            }
+        }
     };
 
     this.draw = function()
@@ -295,6 +356,11 @@ function Game(canvas, context, spriteSheet)
         for(var i in otherKnights)
         {
             otherKnights[i].draw(camera);
+        }
+
+        for(var i = 0 ; i < effects.length; i++)
+        {
+            effects[i].draw(camera);
         }
 
         textAnnouncer.draw();

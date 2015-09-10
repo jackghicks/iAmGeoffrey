@@ -21,12 +21,6 @@ SpawnCollectables('bomb', 5);
 SpawnCollectables('point', 13);
 SpawnCollectables('reverse', 3);
 
-
-setInterval(function() {
-    FLIPPED = !FLIPPED;
-    BroadcastToAllOthers(existingSessions, null, 'f', {flipped: FLIPPED, name: "The Timer"});
-}, 5000);
-
 io.on('connection', function(socket)
 {
 
@@ -83,6 +77,83 @@ io.on('connection', function(socket)
 
     socket.on('p', function(data)
     {
+        var informUsers = false;
+        if(session.holding != null)
+        {
+            if(session.holding=='reverse')
+            {
+                FLIPPED = !FLIPPED;
+                BroadcastToAllOthers(existingSessions, null, 'f', {flipped: FLIPPED, name: session.name});
+            }
+            if(session.holding=='bomb')
+            {
+                //inform the clients(for visual reasons!)
+                BroadcastToAllOthers(existingSessions, null, 'bomb', { placed: {x: data.x, y: data.y} });
+
+                //register the explosion!
+                setTimeout(function() {
+                    //find the extents of the bombs reach
+                    var leftMost = null;
+                    var rightMost = null;
+                    var topMost = null;
+                    var bottomMost = null;
+                    var bombRange = 5;
+                    for(var i=1;i<=bombRange; i++)
+                    {
+                        if(rightMost==null && (isWall(data.x + i, data.y) || i==bombRange))
+                        {
+                            rightMost = data.x + i - 1;
+                        }
+                        if(leftMost==null && (isWall(data.x - i, data.y) || i==bombRange))
+                        {
+                            leftMost = data.x - i + 1;
+                        }
+                        if(bottomMost==null && (isWall(data.x, data.y + i) || i==bombRange))
+                        {
+                            bottomMost = data.y + i - 1;
+                        }
+                        if(topMost==null && (isWall(data.x, data.y - i) || i==bombRange))
+                        {
+                            topMost = data.y - i + 1;
+                        }
+                    }
+
+                    //tell the clients (for visual purposes)
+                    BroadcastToAllOthers(existingSessions, null, 'bomb', { expl: {x: data.x, y: data.y, r: rightMost, l:leftMost, t:topMost, b:bottomMost } });
+
+                    //find any players in the blast zones
+                    for(var x = leftMost; x<= rightMost; x++)
+                    {
+                        for(var sid in existingSessions)
+                        {
+                            if(existingSessions[sid].x == x && existingSessions[sid].y == data.y)
+                            {
+                                PerformAKill(sid, 'b');
+                            }
+                        }
+                    }
+                    for(var y = topMost; y<= bottomMost; y++)
+                    {
+                        for(var sid in existingSessions)
+                        {
+                            if(existingSessions[sid].x == data.x && existingSessions[sid].y == y)
+                            {
+                                PerformAKill(sid, 'b');
+                            }
+                        }
+                    }
+
+                    function isWall(x,y)
+                    {
+                        return maze.GetTileAtPosition(x, y).wall;
+                    }
+                }, 2000);
+            }
+
+            session.holding=null;
+            informUsers = true;
+        }
+
         for(var i = 0 ; i < collectables.length ; i ++ )
         {
             if(collectables[i].x == data.x && collectables[i].y == data.y)
@@ -95,8 +166,31 @@ io.on('connection', function(socket)
                 collectables[i].y = startingPlace.y;
 
                 BroadcastToAllOthers(existingSessions, null, 'c', { collect: data, add: collectables[i] });
+
+                informUsers = true;
+
+                //process pickup type
+                if(collectables[i].type=='point')
+                {
+                    session.score++;
+                    UpdateCurrentlyOnlineList(existingSessions);
+                }
+                else if(collectables[i].type=='reverse')
+                {
+                    session.holding = 'reverse';
+                }
+                else if(collectables[i].type=='bomb')
+                {
+                    session.holding = 'bomb';
+                }
+                else
+                {
+                    informUsers = false;
+                }
             }
         }
+
+        if(informUsers) InformOtherPlayersOfNewPosition(session, existingSessions, null, true);
     });
 
     socket.on('m', function(data) {
@@ -121,20 +215,7 @@ io.on('connection', function(socket)
                 {
                     if(data.key==(FLIPPED?37:39))
                     {
-                        //increase score
-                        session.score++;
-
-                        //mark as dead!
-                        existingSessions[sid].dead = true;
-
-                        UpdateCurrentlyOnlineList(existingSessions);
-
-                        //broadcast the kill to everyone
-                        BroadcastToAllOthers(existingSessions, null, 'k', {
-                            perp: sessionId,
-                            vic: sid,
-                            perpScore: session.score
-                        });
+                        PerformAKill(sid, 's');
                     }
                 }
             }
@@ -144,16 +225,36 @@ io.on('connection', function(socket)
             //do nothing, unrecognised key!
         }
     });
+
+    function PerformAKill(sid, method) {
+        //increase score
+        session.score += 3;
+
+        //mark as dead!
+        existingSessions[sid].dead = true;
+
+        UpdateCurrentlyOnlineList(existingSessions);
+
+        //broadcast the kill to everyone
+        BroadcastToAllOthers(existingSessions, null, 'k', {
+            perp: sessionId,
+            vic: sid,
+            perpScore: session.score,
+            method: method
+        });
+    }
+
 });
 
-function InformOtherPlayersOfNewPosition(session, existingSessions, msg)
+function InformOtherPlayersOfNewPosition(session, existingSessions, msg, informSelf)
 {
     var positionMessage = {sid: session.sid, x: session.x, y: session.y};
     positionMessage.name = session.name;
     positionMessage.char = session.char;
     positionMessage.score = session.score;
+    positionMessage.holding = session.holding;
 
-    BroadcastToAllOthers(existingSessions, session, msg||'pu', positionMessage);
+    BroadcastToAllOthers(existingSessions, informSelf?null:session, msg||'pu', positionMessage);
 }
 
 function UpdateCurrentlyOnlineList(existingSessions)
