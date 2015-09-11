@@ -9,7 +9,7 @@ body
     color: #bbbbbb;
 }
 
-#btl
+#tr
 {
     text-shadow:
     -1px -1px 0 #000,
@@ -24,4 +24,22 @@ body
     top:0px;
     font-size: 1.2em;
     text-align:right;
+}
+
+
+#tl
+{
+    text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+    position: absolute;
+    width:100%;
+    color: white;
+    font-family: monospace;
+    font-weight: bolder;
+    top:0px;
+    font-size: 1.2em;
+    text-align:left;
 }

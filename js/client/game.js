@@ -149,7 +149,16 @@ function Game(canvas, context, spriteSheet)
 
             players[i] = players[i].name + " - " + players[i].score;
         }
-        document.getElementById('btl').innerHTML = data.players.join("<br />");
+
+        var hs = [];
+        for(var i =0; i<data.highscores.length; i++) {
+            hs.push(data.highscores[i].name + " - " + data.highscores[i]);
+        }
+
+        players.unshift("Current Leaders");
+        hs.unshift("High Scores");
+        document.getElementById('tr').innerHTML = players.join("\n").replace(/</g, "&lt;").replace(/\n/g, "<br />");
+        document.getElementById('tl').innerHTML = hs.join("\n").replace(/</g, "&lt;").replace(/\n/g, "<br />");
     });
 
     //set up the sprites (GLOBAL!)

@@ -4,7 +4,7 @@ function Explosion(x, y, delay, spriteSheet)
     sprite.scale = 2;
 
     var elapsed = 0;
-    var lifeTime = 1000;
+    var lifeTime = 300;
     this.delay = delay;
 
     this.drawX = x*32;
