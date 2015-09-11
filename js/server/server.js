@@ -265,13 +265,25 @@ function UpdateCurrentlyOnlineList(existingSessions)
     {
         if(!existingSessions[sid].dead)
         {
-            players.push({sid: sid, name:existingSessions[sid].name, score: existingSessions[sid].score });
+            var scoreObj = {sid: sid, name:existingSessions[sid].name, score: existingSessions[sid].score };
+            players.push(scoreObj);
+            SubmitHighScore(scoreObj);
         }
     }
 
-    players = players.sort(function(a,b) { return b.score - a.score; } );
+    var highscores = [];
+    for(var name in allHighestScores)
+    {
+        highscores.push({name: name, score: allHighestScores[name]});
+    }
 
-    BroadcastToAllOthers(existingSessions, null, 'cp', {players:players});
+    var srt = function(a,b) { return b.score - a.score; };
+    players = players.sort(srt);
+    highscores = highscores.sort(srt);
+
+    if(highscores.length >20) highscores.length = 20;
+
+    BroadcastToAllOthers(existingSessions, null, 'cp', {players:players, highscores: highscores});
 }
 
 function BroadcastToAllOthers(existingSessions, session, msg, content)
@@ -283,5 +295,16 @@ function BroadcastToAllOthers(existingSessions, session, msg, content)
         {
             existingSessions[otherSessionId].socket.emit(msg, content);
         }
+    }
+}
+
+var allHighestScores = db('highscores') | {};
+function SubmitHighScore(s)
+{
+    if(!allHighestScores[s.name] || allHighestScores[s.name] < s.score)
+    {
+        allHighestScores[s.name] = s.score;
+        //persist
+        db('highscores', allHighestScores);
     }
 }
