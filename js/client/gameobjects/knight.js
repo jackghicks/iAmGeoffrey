@@ -22,6 +22,22 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
         var diffY = this.y*32 - drawY;
         drawX += diffX*LERPMULT*(dt/1000);
         drawY += diffY*LERPMULT*(dt/1000);
+
+        if(swordSwingElapsed)
+        {
+            swordSwingElapsed+=dt;
+            if(swordSwingElapsed>swordSwingDuration)
+            {
+                swordSwingElapsed = 0;
+            }
+        }
+    };
+
+    var swordSwingDuration = 200;
+    var swordSwingElapsed = 0;
+
+    this.swingSword = function() {
+        swordSwingElapsed = 1;
     };
 
     this.draw = function(camera)
@@ -69,6 +85,14 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
                 if(FLIPPED)
                 {
                     spriteKnight.sy += 32;
+                }
+
+                if(swordSwingElapsed) {
+                    spriteSword
+                }
+                else
+                {
+                    spriteSword.rotation = 0;
                 }
 
                 //draw the knight

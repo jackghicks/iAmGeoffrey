@@ -281,7 +281,7 @@ function UpdateCurrentlyOnlineList(existingSessions)
     players = players.sort(srt);
     highscores = highscores.sort(srt);
 
-    if(highscores.length >20) highscores.length = 20;
+    if(highscores.length >10) highscores.length = 10;
 
     BroadcastToAllOthers(existingSessions, null, 'cp', {players:players, highscores: highscores});
 }
