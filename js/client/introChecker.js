@@ -11,7 +11,7 @@ function getParameterByName(name) {
 }
 
 //fetch the name and the chatacter selection
-var playerName = getParameterByName('name');
+var playerName = getParameterByName('name').replace(/</g, "&lt;");
 var playerCharacter = getParameterByName('char');
 
 //if either is not set, go to the intro screen

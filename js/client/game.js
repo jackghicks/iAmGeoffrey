@@ -17,7 +17,7 @@ function Game(canvas, context, spriteSheet)
 
     function UpdateOtherKnightPosition(data)
     {
-        if(data.sid == socket.ticket) {
+        if(data.sid == socket.sid) {
             playerKnight.score = data.score;
             playerKnight.holding = data.holding;
         }
@@ -39,8 +39,7 @@ function Game(canvas, context, spriteSheet)
     //connect to socket.io
     var socket = io(document.location.href);
     socket.on('w', function(data) {
-        socket.ticket = data.sid;
-        console.log("Server connected with ticket " + data.sid);
+        socket.sid = data.sid;
 
         playerKnight.x = data.x;
         playerKnight.y = data.y;
@@ -66,11 +65,10 @@ function Game(canvas, context, spriteSheet)
 
         if(data.expl)
         {
-            console.log(data.expl);
             //remove the bomb
             for(var i = 0 ;i <effects.length; i++)
             {
-                if(effects[i].x == data.expl.x && effects[i].y == data.expl.y)
+                if(PosEq(effects[i], data.expl))
                 {
                     effects.splice(i, 1);
                     break;
@@ -86,21 +84,6 @@ function Game(canvas, context, spriteSheet)
             {
                 effects.push(new Explosion(data.expl.x, y, Math.abs(y-data.expl.y)*50, spriteSheet));
             }
-
-            /*effects.push(new Explosion(data.expl.x, data.expl.y, 0, spriteSheet));
-
-            for(var i = 1; i <= 5; i++ )
-            {
-
-                if(data.expl.x + i <= data.expl.r)
-                    effects.push(new Explosion(data.expl.x + i, data.expl.y, i*50, spriteSheet));
-                if(data.expl.x - i >= data.expl.l)
-                    effects.push(new Explosion(data.expl.x - i, data.expl.y, i*50, spriteSheet));
-                if(data.expl.y + i <= data.expl.b)
-                    effects.push(new Explosion(data.expl.x, data.expl.y +1, i*50, spriteSheet));
-                if(data.expl.y - i >= data.expl.t)
-                    effects.push(new Explosion(data.expl.x, data.expl.y -1, i*50, spriteSheet));
-            }*/
         }
     });
 
@@ -109,7 +92,7 @@ function Game(canvas, context, spriteSheet)
         {
             for(var i = 0 ;i <collectables.length; i++)
             {
-                if(collectables[i].x == data.collect.x && collectables[i].y == data.collect.y)
+                if(PosEq(collectables[i], data.collect))
                 {
                     collectables.splice(i, 1);
                     break;
@@ -138,7 +121,7 @@ function Game(canvas, context, spriteSheet)
         {
             //handle gilded status!
             var isGold = players[i].score == topScore;
-            if(players[i].sid == socket.ticket)
+            if(players[i].sid == socket.sid)
             {
                 playerKnight.gold = isGold;
             }
@@ -151,14 +134,15 @@ function Game(canvas, context, spriteSheet)
         }
 
         var hs = [];
+        console.log(data.highscores);
         for(var i =0; i<data.highscores.length; i++) {
-            hs.push(data.highscores[i].name + " - " + data.highscores[i]);
+            hs.push(data.highscores[i].name + " - " + data.highscores[i].score);
         }
 
         players.unshift("Current Leaders");
         hs.unshift("High Scores");
-        document.getElementById('tr').innerHTML = players.join("\n").replace(/</g, "&lt;").replace(/\n/g, "<br />");
-        document.getElementById('tl').innerHTML = hs.join("\n").replace(/</g, "&lt;").replace(/\n/g, "<br />");
+        document.getElementById('tr').innerHTML = players.join("<br />");
+        document.getElementById('tl').innerHTML = hs.join("<br />");
     });
 
     //set up the sprites (GLOBAL!)
@@ -204,32 +188,31 @@ function Game(canvas, context, spriteSheet)
         {
             socket.emit('p', { x: playerKnight.x, y: playerKnight.y });
         }
-
-        var newPositionX = playerKnight.x;
-        var newPositionY = playerKnight.y;
+        var newPos = {x: playerKnight.x, y: playerKnight.y };
         var direction = keyCodes[e.keyCode];
 
         if(!direction)
             return;
 
-        newPositionX += direction.x;
-        newPositionY += direction.y;
+        newPos.x += direction.x;
+        newPos.y += direction.y;
 
-        if(TestActiveCollisions(newPositionX,newPositionY,e.keyCode) == false && maze.GetTileAtPosition(newPositionX, newPositionY).wall == false)
+        if(TestActiveCollisions(newPos,e.keyCode) == false && maze.GetTileAtPosition(newPos.x, newPos.y).wall == false)
         {
-            socket.emit('m', {ticket: socket.ticket, key: e.keyCode});
-            playerKnight.x = newPositionX;
-            playerKnight.y = newPositionY;
+            socket.emit('m', {sid: socket.sid, key: e.keyCode});
+            playerKnight.x = newPos.x;
+            playerKnight.y = newPos.y;
         }
 
     };
 
-    function TestActiveCollisions(newPositionX, newPositionY, keyCode)
+    function TestActiveCollisions(newPos, keyCode)
     {
         //Test for Knights
         for (var sid in otherKnights)
         {
-            if(!otherKnights[sid].dead && otherKnights[sid].x == newPositionX && otherKnights[sid].y == newPositionY)
+
+            if(!otherKnights[sid].dead && PosEq(otherKnights[sid], newPos))
             {
                 if(keyCode==(FLIPPED?37:39))
                 {
@@ -266,7 +249,7 @@ function Game(canvas, context, spriteSheet)
     {
         var killVerb = data.method=='s'?" stabbed ": " detonated ";
 
-        if(data.perp == socket.ticket)
+        if(data.perp == socket.sid)
         {
             //I Am The Murderer.
             //increase own score
@@ -278,7 +261,7 @@ function Game(canvas, context, spriteSheet)
             //trigger "You killed X" message
             textAnnouncer.displayMessage("You" + killVerb + otherKnights[data.vic].name, "top");
         }
-        else if(data.vic == socket.ticket)
+        else if(data.vic == socket.sid)
         {
             //I Am The Victim
             //mark own character as dead
@@ -398,5 +381,10 @@ function Game(canvas, context, spriteSheet)
         }
     }
 
+}
+
+function PosEq(posA, posB)
+{
+    return posA.x == posB.x && posA.y == posB.y;
 }
 

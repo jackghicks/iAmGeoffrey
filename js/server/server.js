@@ -298,10 +298,10 @@ function BroadcastToAllOthers(existingSessions, session, msg, content)
     }
 }
 
-var allHighestScores = db('highscores') | {};
+var allHighestScores = db('highscores') || {};
 function SubmitHighScore(s)
 {
-    if(!allHighestScores[s.name] || allHighestScores[s.name] < s.score)
+    if((s.score>0) && (!allHighestScores[s.name] || allHighestScores[s.name] < s.score))
     {
         allHighestScores[s.name] = s.score;
         //persist

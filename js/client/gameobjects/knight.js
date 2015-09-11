@@ -43,13 +43,13 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
             {
                 spriteKnight = new Sprite(spriteSheet, 0, 32, 32, 32);
                 spriteSword = new Sprite(spriteSheet, 16, 0, 16, 32);
-                spriteSword.rotationHotSpot = [9, 21];
+                spriteSword.rhs = [9, 21];
             }
             else if(this.char=='f')
             {
                 spriteKnight = new Sprite(spriteSheet, 64, 32, 32, 32);
                 spriteSword = new Sprite(spriteSheet, 80, 0, 16, 32);
-                spriteSword.rotationHotSpot = [9, 21];
+                spriteSword.rhs = [9, 21];
             }
         }
         else
