@@ -108,7 +108,7 @@ function Game(canvas, context, spriteSheet)
     socket.on('f', function(data) {
         if(FLIPPED!= data.flipped)
         {
-            textAnnouncer.displayMessage("REVERSED!", "middle");
+            textAnnouncer.displayMessage(data.flipped ? "<< REVERSED! <<" : ">> REVERSED! >>", "middle");
             textAnnouncer.displayMessage(data.name + " has reversed the game!", "top");
         }
         FLIPPED = data.flipped;
@@ -247,9 +247,36 @@ function Game(canvas, context, spriteSheet)
 
     socket.on('k', function(data)
     {
-        var killVerb = data.method=='s'?" stabbed ": " detonated ";
+        var killVerb = data.method=='s'?" got ": " blew up ";
 
-        if(data.perp == socket.sid)
+        if(data.vic == socket.sid)
+        {
+            //I Am The Victim
+            //mark own character as dead
+            playerKnight.dead = true;
+
+            //HACK: Disable movement
+            keyCodes = [];
+
+            //trigger "X killed you" message
+            if(data.perp == socket.sid)
+            {
+                textAnnouncer.displayMessage("You" + killVerb + "yourself!", "top");
+            }
+            else
+            {
+                textAnnouncer.displayMessage(otherKnights[data.perp].name + killVerb + "you", "top");
+            }
+
+            textAnnouncer.displayMessage("You Are Dead", "middle");
+
+            //after 3 seconds, refresh the page to trigger respawn
+            setTimeout(function()
+            {
+                window.location = window.location;
+            }, 3000);
+        }
+        else if(data.perp == socket.sid)
         {
             //I Am The Murderer.
             //increase own score
@@ -260,26 +287,6 @@ function Game(canvas, context, spriteSheet)
 
             //trigger "You killed X" message
             textAnnouncer.displayMessage("You" + killVerb + otherKnights[data.vic].name, "top");
-        }
-        else if(data.vic == socket.sid)
-        {
-            //I Am The Victim
-            //mark own character as dead
-            playerKnight.dead = true;
-
-            //HACK: Disable movement
-            keyCodes = [];
-
-            //trigger "X killed you" message
-            textAnnouncer.displayMessage(otherKnights[data.perp].name +  killVerb + "you", "top");
-
-            textAnnouncer.displayMessage("You Are Dead.", "middle");
-
-            //after 3 seconds, refresh the page to trigger respawn
-            setTimeout(function()
-            {
-                window.location = window.location;
-            }, 3000);
         }
         else
         {
