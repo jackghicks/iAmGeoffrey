@@ -147,7 +147,7 @@ io.on('connection', function(socket)
                     {
                         return maze.GetTileAtPosition(x, y).wall;
                     }
-                }, 2000);
+                }, 1200);
             }
 
             session.holding=null;
