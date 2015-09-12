@@ -33,9 +33,6 @@ function CameraController(canvas, context)
         currentX += diffX*LERPMULT*(dt/1000);
         currentY += diffY*LERPMULT*(dt/1000);
 
-        this.curCameraPosX = currentX - (canvas.width/2);
-        this.curCameraPosY = currentY - (canvas.height/2);
-
         this.drawableX = currentX - (canvas.width/2)/this.globalScale;
         this.drawableY = currentY - (canvas.height/2)/this.globalScale;
 
@@ -74,7 +71,7 @@ function CameraController(canvas, context)
 
             context.translate(dx*this.globalScale,dy*this.globalScale);
 
-            //transform by camera
+            context.translate(rx*this.globalScale, ry*this.globalScale);
 
             context.scale(this.globalScale, this.globalScale);
 
