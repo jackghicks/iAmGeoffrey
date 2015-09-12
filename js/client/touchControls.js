@@ -44,7 +44,7 @@ function SetupTouchControls(inputHandler)
     function EndListener(touch)
     {
         //if it has been clicked (low duration, low movement) then simulate space bar
-        if(touch.duration<120)
+        if(touch.duration<200)
         {
             if(touch.moveX<5 && touch.moveY<5)
             {
