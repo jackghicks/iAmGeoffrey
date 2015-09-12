@@ -33,6 +33,9 @@ function CameraController(canvas, context)
         currentX += diffX*LERPMULT*(dt/1000);
         currentY += diffY*LERPMULT*(dt/1000);
 
+        this.curCameraPosX = currentX - (canvas.width/2);
+        this.curCameraPosY = currentY - (canvas.height/2);
+
         this.drawableX = currentX - (canvas.width/2)/this.globalScale;
         this.drawableY = currentY - (canvas.height/2)/this.globalScale;
 
@@ -42,8 +45,7 @@ function CameraController(canvas, context)
     {
         dWidth = dWidth * uniformScale;
         dHeight = dHeight * uniformScale;
-        var rx = rotationHotspot[0] * uniformScale;
-        var ry = rotationHotspot[1] * uniformScale;
+
 
         //store the current transformation state
         context.save();
@@ -51,6 +53,9 @@ function CameraController(canvas, context)
         //if rotation is zero
         if(rotation==0)
         {
+
+
+
             //perform scaling (scale down the canvas)
             context.scale(this.globalScale, this.globalScale);
 
@@ -62,29 +67,25 @@ function CameraController(canvas, context)
         }
         else
         {
-            dx *= this.globalScale;
-            dy *= this.globalScale;
+            var rx = rotationHotspot[0] * uniformScale;
+            var ry = rotationHotspot[1] * uniformScale;
 
-            //translate to bring us to the centre of the canvas
-            context.translate((canvas.width/2), (canvas.height/2));
 
-            //translate to offset our sprite relative to the centre of the canvas
-            context.translate(0-(canvas.width/2-dx), 0-(canvas.height/2-dy));
 
-            //translate to move sprites rendered position according to the pivot point
-            context.translate(rx*this.globalScale, ry*this.globalScale);
-
-            //perform rotation (rotate canvas)
-            context.rotate(rotation);
-
-            //perform scaling (scale down the canvas)
-            context.scale(this.globalScale, this.globalScale);
+            context.translate(dx*this.globalScale,dy*this.globalScale);
 
             //transform by camera
+
+            context.scale(this.globalScale, this.globalScale);
+
             context.translate(-this.drawableX, -this.drawableY);
 
-            //draw the image (rx and ry here affect the actual rendered position, so here is where rotational 'swing' offset can be introduced)
-            context.drawImage(image, sx, sy, sWidth, sHeight, 0-rx, 0-ry, dWidth, dHeight);
+            context.rotate(rotation);
+
+            //draw the image
+            context.drawImage(image, sx, sy, sWidth, sHeight, -rx, -ry, dWidth, dHeight);
+
+
         }
 
         //move the canvas back to where it belongs!
