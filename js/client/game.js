@@ -134,7 +134,6 @@ function Game(canvas, context, spriteSheet)
         }
 
         var hs = [];
-        console.log(data.highscores);
         for(var i =0; i<data.highscores.length; i++) {
             hs.push(data.highscores[i].name + " - " + data.highscores[i].score);
         }
@@ -181,9 +180,15 @@ function Game(canvas, context, spriteSheet)
 
 
 
+
     //keyboard listener
-    document.onkeydown = function(e)
+    var inputHandler = document.onkeydown = function(e)
     {
+        if(e.keyCode==84)
+        {
+            socket.emit('t', {msg: window.prompt("Send message to all players:") });
+        }
+
         if(e.keyCode==(FLIPPED?37:39))
         {
             //trigger sword swing!
@@ -213,6 +218,8 @@ function Game(canvas, context, spriteSheet)
         }
 
     };
+
+    SetupTouchControls(inputHandler);
 
     function TestActiveCollisions(newPos, keyCode)
     {
@@ -251,16 +258,20 @@ function Game(canvas, context, spriteSheet)
         delete otherKnights[data.sid];
     });
 
+    socket.on('t', function(data) {
+        textAnnouncer.displayMessage(data.name + ": " + data.msg, "bottom");
+    });
+
     socket.on('k', function(data)
     {
         var killVerb = data.method=='s'?" got ": " blew up ";
-
+        var deadKnight = null;
         if(data.vic == socket.sid)
         {
             //I Am The Victim
             //mark own character as dead
             playerKnight.dead = true;
-
+            deadKnight = playerKnight;
             //HACK: Disable movement
             keyCodes = [];
 
@@ -290,6 +301,7 @@ function Game(canvas, context, spriteSheet)
 
             //mark victim as dead
             otherKnights[data.vic].dead = true;
+            deadKnight = otherKnights[data.vic];
 
             //trigger "You killed X" message
             textAnnouncer.displayMessage("You" + killVerb + otherKnights[data.vic].name, "top");
@@ -301,16 +313,15 @@ function Game(canvas, context, spriteSheet)
 
             //mark victim as dead
             otherKnights[data.vic].dead = true;
+            deadKnight = otherKnights[data.vic];
 
             //trigger "X killed Y" message
             textAnnouncer.displayMessage(otherKnights[data.perp].name +  killVerb + otherKnights[data.vic].name, "top");
 
         }
 
-
-
-
-        //TODO: Play blood splatter
+        //play blood splatter
+        effects.push(new BloodSplatter(deadKnight.x, deadKnight.y, data.method=='b'?0:(FLIPPED?-300:300), spriteSheet));
 
     });
     /**
@@ -356,14 +367,26 @@ function Game(canvas, context, spriteSheet)
         context.fillStyle = "white";
         context.textAlign = "center";
 
-        //draw the knight
-        playerKnight.draw(camera);
+        //draw the knight (if dead)
+        if(playerKnight.dead)
+            playerKnight.draw(camera);
 
-        //draw other knights
+        //draw other knights - dead first
         for(var i in otherKnights)
         {
-            otherKnights[i].draw(camera);
+            if(otherKnights[i].dead)
+                otherKnights[i].draw(camera);
         }
+        //now living ones
+        for(var i in otherKnights)
+        {
+            if(!otherKnights[i].dead)
+                otherKnights[i].draw(camera);
+        }
+
+        //draw the knight (if alive)
+        if(!playerKnight.dead)
+            playerKnight.draw(camera);
 
         for(var i = 0 ; i < effects.length; i++)
         {

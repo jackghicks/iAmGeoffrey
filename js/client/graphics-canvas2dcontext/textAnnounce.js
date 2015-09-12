@@ -7,12 +7,17 @@ function TextAnnouncer(canvas, context)
     {
         if(zone=='top')
         {
-            var ypos = canvas.height/4;
+            var ypos = canvas.height*0.25;
             var font = "30px monospace";
+        }
+        else if (zone=='bottom')
+        {
+            var ypos = canvas.height*0.9;
+            var font = "20px monospace";
         }
         else
         {
-            var ypos = canvas.height/2;
+            var ypos = canvas.height*0.6;
             var font = "60px monospace";
         }
         messages.push(new TextMessage(text, canvas.width/2, ypos, font));

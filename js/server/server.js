@@ -29,7 +29,7 @@ io.on('connection', function(socket)
 
     //new session, assign a sessionId and create the initial session object
     var sessionId = clientSessionCounter++;
-    var session = existingSessions[sessionId] = {
+    var session = {
         sid: sessionId,
         x: startingPlace.x,
         y: startingPlace.y,
@@ -59,13 +59,13 @@ io.on('connection', function(socket)
     //send the welcome message
     socket.emit('w', welcomeMessage);
 
-    //tell everybody we are here!
-    InformOtherPlayersOfNewPosition(session, existingSessions);
-
     socket.on('i', function(data) {
         session.name = data.name;
         session.char = data.char;
 
+        existingSessions[sessionId] = session;
+
+        InformOtherPlayersOfNewPosition(session, existingSessions);
         UpdateCurrentlyOnlineList(existingSessions);
     });
 
@@ -191,6 +191,11 @@ io.on('connection', function(socket)
         }
 
         if(informUsers) InformOtherPlayersOfNewPosition(session, existingSessions, null, true);
+    });
+
+    socket.on('t', function(data) {
+        //rebroadcast with name included
+        BroadcastToAllOthers(existingSessions, session, 't', {name: session.name, msg: data.msg});
     });
 
     socket.on('m', function(data) {

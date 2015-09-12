@@ -7,8 +7,6 @@
 function CameraController(canvas, context)
 {
     this.context = context;
-    this.globalScale = 3.0;
-
     var LERPMULT = 4.5;
 
     this.drawableX = 0;
@@ -28,6 +26,8 @@ function CameraController(canvas, context)
 
     this.update = function(dt)
     {
+        this.globalScale = (canvas.width>500)?3.0:1.5;
+
         var diffX = targetX - currentX;
         var diffY = targetY - currentY;
         currentX += diffX*LERPMULT*(dt/1000);
@@ -38,7 +38,7 @@ function CameraController(canvas, context)
 
     };
 
-    this.drawImage = function(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight, rotation, rotationHotspot, uniformScale)
+    this.drawImage = function(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight, rotation, rotationHotspot, uniformScale, alpha)
     {
         dWidth = dWidth * uniformScale;
         dHeight = dHeight * uniformScale;
@@ -47,11 +47,11 @@ function CameraController(canvas, context)
         //store the current transformation state
         context.save();
 
+        context.globalAlpha = alpha;
+
         //if rotation is zero
         if(rotation==0)
         {
-
-
 
             //perform scaling (scale down the canvas)
             context.scale(this.globalScale, this.globalScale);

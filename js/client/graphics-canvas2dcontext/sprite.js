@@ -16,9 +16,10 @@ function Sprite(img, sx, sy, sWidth, sHeight) {
     this.scale = 1;
     this.rotation = 0;
     this.rhs = [0,0];
+    this.alpha = 1;
 
     this.draw = function(x, y, camera)
     {
-        camera.drawImage(this.img, this.sx, this.sy, this.sWidth, this.sHeight, x, y, this.sWidth, this.sHeight, this.rotation, this.rhs, this.scale);
+        camera.drawImage(this.img, this.sx, this.sy, this.sWidth, this.sHeight, x, y, this.sWidth, this.sHeight, this.rotation, this.rhs, this.scale, this.alpha);
     }
 }
