@@ -7,7 +7,7 @@
 function CameraController(canvas, context)
 {
     this.context = context;
-    this.globalScale = 2.0;
+    this.globalScale = 3.0;
 
     var LERPMULT = 4.5;
 
@@ -60,7 +60,7 @@ function CameraController(canvas, context)
             context.translate(-this.drawableX, -this.drawableY);
 
             //draw the image
-            context.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+            context.drawImage(image, sx, sy, sWidth, sHeight, dx, dy+0.1, dWidth, dHeight);
         }
         else
         {

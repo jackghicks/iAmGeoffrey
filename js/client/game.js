@@ -184,10 +184,18 @@ function Game(canvas, context, spriteSheet)
     //keyboard listener
     document.onkeydown = function(e)
     {
+        if(e.keyCode==(FLIPPED?37:39))
+        {
+            //trigger sword swing!
+            playerKnight.swingSword();
+        }
+
         if( e.keyCode == 32)
         {
             socket.emit('p', { x: playerKnight.x, y: playerKnight.y });
+            return;
         }
+
         var newPos = {x: playerKnight.x, y: playerKnight.y };
         var direction = keyCodes[e.keyCode];
 
@@ -217,7 +225,6 @@ function Game(canvas, context, spriteSheet)
                 if(keyCode==(FLIPPED?37:39))
                 {
                     //allow the walk, trigger opponent death
-                    //TODO: Trigger sword swing!
                 }
                 else if(keyCode==(FLIPPED?39:37))
                 {
@@ -227,7 +234,6 @@ function Game(canvas, context, spriteSheet)
                 else
                 {
                     //block the walk
-                    //TODO: consider the "push" mechanic here
                     return true;
                 }
             }

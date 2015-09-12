@@ -34,7 +34,7 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
     };
 
     var swordSwingDuration = 200;
-    var swordSwingElapsed = 0;
+    var swordSwingElapsed = 1;
 
     this.swingSword = function() {
         swordSwingElapsed = 1;
@@ -77,6 +77,19 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
             }
             else
             {
+                //control sword swing
+                if(swordSwingElapsed)
+                {
+
+                    spriteSword.rotation = 0.3 + (swordSwingElapsed/swordSwingDuration)*1.3;
+
+                }
+                else
+                {
+                    spriteSword.rotation = 1.5;
+                }
+
+
                 //switch to gold sprite if needed
                 if(this.gold)
                 {
@@ -85,19 +98,17 @@ function Knight(initialX, initialY, name, char, score, spriteSheet)
                 if(FLIPPED)
                 {
                     spriteKnight.sy += 32;
+
+                    //if flipped, should flip the rotation too
+                    spriteSword.rotation = -spriteSword.rotation;
                 }
 
-                if(swordSwingElapsed) {
-                    spriteSword
-                }
-                else
-                {
-                    spriteSword.rotation = 0;
-                }
+
 
                 //draw the knight
                 spriteKnight.draw(drawX, drawY, camera);
                 spriteSword.draw(drawX + 16 - (FLIPPED?21:0), drawY, camera);
+
 
                 if(spriteHolding)
                     spriteHolding.draw(drawX-4 + (FLIPPED?24:0), drawY+16, camera);

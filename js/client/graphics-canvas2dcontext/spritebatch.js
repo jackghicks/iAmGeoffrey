@@ -29,7 +29,7 @@ function SpriteBatch()
             var sprite = spriteList[i].sprite;
 
             //draw the image
-            context.drawImage(sprite.img, sprite.sx, sprite.sy, sprite.sWidth, sprite.sHeight, spriteList[i].x, spriteList[i].y, sprite.sWidth*sprite.scale, sprite.sHeight*sprite.scale);
+            context.drawImage(sprite.img, sprite.sx, sprite.sy, sprite.sWidth, sprite.sHeight, spriteList[i].x, spriteList[i].y+0.1, sprite.sWidth*sprite.scale, sprite.sHeight*sprite.scale);
         }
 
         //store the current transformation state
