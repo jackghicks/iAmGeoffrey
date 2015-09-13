@@ -13,7 +13,7 @@ function SpawnCollectables(type, count)
 {
     for(var i = 0; i < count; i++ )
     {
-        var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
+        var startingPlace = CalcSP(maze, existingSessions, collectables);
         collectables.push({type:type, x: startingPlace.x, y: startingPlace.y});
     }
 }
@@ -25,7 +25,7 @@ io.on('connection', function(socket)
 {
 
     //calculate a starting place
-    var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
+    var startingPlace = CalcSP(maze, existingSessions, collectables);
 
     //new session, assign a sessionId and create the initial session object
     var sessionId = clientSessionCounter++;
@@ -159,7 +159,7 @@ io.on('connection', function(socket)
             if(collectables[i].x == data.x && collectables[i].y == data.y)
             {
                 //get a new starting place
-                var startingPlace = CalculateStartingPlace(maze, existingSessions, collectables);
+                var startingPlace = CalcSP(maze, existingSessions, collectables);
 
                 //set it into the collectable
                 collectables[i].x = startingPlace.x;
