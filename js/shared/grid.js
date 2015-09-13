@@ -49,7 +49,7 @@ exports.ArrayGrid2D = function(initialValue, offMapValue, size)
     {
         if(x<0||x>=size||y<0||y>=size)
         {
-            console.warn("WARNING: TRYING TO SET OFF MAP VALUE", x, y, v);
+            //silently ignore
         }
         else
         {
