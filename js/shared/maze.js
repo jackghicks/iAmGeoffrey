@@ -89,19 +89,6 @@ exports.Maze = function(randomNumberGenerator, size)
         }
     }
 
-    this.PrintToConsole = function()
-    {
-        for(var x = 0 ; x < size*2; x++)
-        {
-            var line = "";
-            for(var y = 0 ; y < size*2; y++)
-            {
-                line += maze.get(x,y) ? "  " : "XX";
-            }
-            console.log(line);
-        }
-    };
-
     this.GetTileAtPosition = function(x,y)
     {
         return {

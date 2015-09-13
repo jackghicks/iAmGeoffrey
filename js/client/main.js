@@ -25,6 +25,7 @@ var readyStateCheckInterval = setInterval(function() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 context.mozImageSmoothingEnabled = false;
+                context.webkitImageSmoothingEnabled = false;
                 context.msImageSmoothingEnabled = false;
                 context.imageSmoothingEnabled = false;
                 browserTick();
